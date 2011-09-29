@@ -226,8 +226,32 @@ class CI_Profiler {
 					{
 						$val = str_replace($bold, '<strong>'.$bold.'</strong>', $val);
 					}
-
-					$output .= "<tr><td style='padding:5px; vertical-align: top;width:1%;color:#900;font-weight:normal;background-color:#ddd;'>".$time."&nbsp;&nbsp;</td><td style='padding:5px; color:#000;font-weight:normal;background-color:#ddd;'>".$val."</td></tr>\n";
+					
+					$explain_obj = $db->query('EXPLAIN '.$db->queries[$key]);
+					$explain = "<table style='width:100%;border-collapse:collapse;'><tr>";
+					foreach ($explain_obj->row() as $key => $value)
+					{
+						$explain .= "<th style='border:2px solid #eee;padding:5px;'>".$key."</th>";
+					}
+					$explain .= '</tr>';
+					foreach ($explain_obj->result() as $row)
+					{
+						$err = '';
+						if (preg_match('/temporary|filesort/i', @$row->Extra))
+						{
+							$err = ' style="background:#900;color:#fff;"';
+						}
+						
+						$explain .= '<tr'.$err.'>';
+						foreach ($row as $column)
+						{
+							$explain .= "<td style='border:2px solid #eee;padding:5px;'>".$column."</td>";
+						}
+						$explain .= '</tr>';
+					}
+					$explain.= '</table>';
+					
+					$output .= "<tr><td style='padding:5px; vertical-align: top;width:1%;color:#900;font-weight:normal;background-color:#ddd;'>".$time."&nbsp;&nbsp;</td><td style='padding:5px; color:#000;font-weight:normal;background-color:#ddd;'>".$val.$explain."</td></tr>\n";
 				}
 			}
 
